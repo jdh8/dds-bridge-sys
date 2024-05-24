@@ -8,6 +8,7 @@ repository = "https://github.com/jdh8/dds-bridge-sys"
 license = "Apache-2.0"
 categories = ["game-development", "external-ffi-bindings"]
 keywords = ["bridge", "double-dummy"]
+exclude = ["/vendor/hands", "/vendor/doc"]
 
 [build-dependencies]
 bindgen = "0.69.4"
