@@ -1,0 +1,4 @@
+[submodule "vendor"]
+	path = vendor
+	url = https://github.com/dds-bridge/dds.git
+	branch = develop
