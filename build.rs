@@ -16,13 +16,19 @@ fn main() -> anyhow::Result<()> {
         .generate()?
         .write_to_file(PathBuf::from(env::var("OUT_DIR")?).join("bindings.rs"))?;
 
-    cc::Build::new()
+    let mut build = cc::Build::new();
+    build
         .cpp(true)
         .files(glob("vendor/src/*.cpp")?.flatten())
         .define("DDS_THREADS_STL", None)
         .flag_if_supported("-flto")
-        .flag_if_supported("/GL")
-        .try_compile("dds")?;
+        .flag_if_supported("/GL");
 
-    Ok(())
+    #[cfg(windows)]
+    build.define("DDS_THREADS_WINAPI", None);
+
+    #[cfg(any(target_os = "macos", target_os = "ios"))]
+    build.define("DDS_THREADS_GCD", None);
+
+    Ok(build.try_compile("dds")?)
 }
