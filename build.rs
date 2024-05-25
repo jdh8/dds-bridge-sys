@@ -6,6 +6,7 @@ fn main() -> anyhow::Result<()> {
     cc::Build::new()
         .cpp(true)
         .files(glob("vendor/src/*.cpp")?.flatten())
+        .define("DDS_THREADS_STL", None)
         .compile("dds");
     bindgen::Builder::default()
         .header("vendor/src/dds.h")
