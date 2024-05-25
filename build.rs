@@ -1,7 +1,12 @@
+use glob::glob;
 use std::env;
 use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
+    cc::Build::new()
+        .cpp(true)
+        .files(glob("vendor/src/*.cpp")?.flatten())
+        .compile("dds");
     bindgen::Builder::default()
         .header("vendor/src/dds.h")
         .use_core()
