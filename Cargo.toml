@@ -11,4 +11,5 @@ keywords = ["bridge", "double-dummy"]
 exclude = ["/vendor/hands", "/vendor/doc"]
 
 [build-dependencies]
+anyhow = "1.0.86"
 bindgen = "0.69.4"
