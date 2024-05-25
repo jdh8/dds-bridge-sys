@@ -20,6 +20,8 @@ fn main() -> anyhow::Result<()> {
         .cpp(true)
         .files(glob("vendor/src/*.cpp")?.flatten())
         .define("DDS_THREADS_STL", None)
+        .flag_if_supported("-flto")
+        .flag_if_supported("/GL")
         .try_compile("dds")?;
 
     Ok(())
