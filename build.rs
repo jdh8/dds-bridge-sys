@@ -30,5 +30,20 @@ fn main() -> anyhow::Result<()> {
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     build.define("DDS_THREADS_GCD", None);
 
-    Ok(build.try_compile("dds")?)
+    #[cfg(target_os = "linux")]
+    {
+        build.define("DDS_THREADS_OPENMP", None);
+        env::var("DEP_OPENMP_FLAG")?.split(' ').for_each(|flag| {
+            build.flag(flag);
+        });
+    }
+
+    build.try_compile("dds")?;
+
+    #[cfg(target_os = "linux")]
+    if let Some(link) = env::var_os("DEP_OPENMP_CARGO_LINK_INSTRUCTIONS") {
+        env::split_paths(&link).for_each(|i| println!("cargo:{}", i.display()));
+    }
+
+    Ok(())
 }
