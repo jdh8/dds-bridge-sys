@@ -7,8 +7,6 @@ fn main() -> anyhow::Result<()> {
         .cpp(true)
         .files(glob("vendor/src/*.cpp")?.flatten())
         .define("DDS_THREADS_STL", None)
-        .static_flag(true)
-        .shared_flag(false)
         .compile("dds");
     bindgen::Builder::default()
         .header("vendor/src/dds.h")
