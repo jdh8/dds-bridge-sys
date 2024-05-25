@@ -6,7 +6,7 @@ edition = "2021"
 description = "Generated bindings to DDS, the double dummy solver for bridge"
 repository = "https://github.com/jdh8/dds-bridge-sys"
 license = "Apache-2.0"
-categories = ["game-development", "external-ffi-bindings"]
+categories = ["game-development", "external-ffi-bindings", "no-std"]
 keywords = ["bridge", "double-dummy"]
 exclude = ["/vendor/hands", "/vendor/doc"]
 

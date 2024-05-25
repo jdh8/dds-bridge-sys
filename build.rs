@@ -7,6 +7,7 @@ fn main() {
 
     bindgen::Builder::default()
         .header("vendor/src/dds.h")
+        .use_core()
         .allowlist_file("vendor/.*")
         .clang_arg("-xc++")
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
