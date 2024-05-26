@@ -26,7 +26,7 @@ fn main() -> anyhow::Result<()> {
         .files(glob("vendor/src/*.cpp")?.flatten())
         .std("c++14")
         .define("DDS_THREADS_STL", None)
-        .warnings(false)
+        .cargo_warnings(false)
         .flag_if_supported("-flto")
         .flag_if_supported("/GL");
 
