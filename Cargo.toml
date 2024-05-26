@@ -15,3 +15,8 @@ anyhow = "1.0.86"
 bindgen = "0.69.4"
 cc = { version = "1.0.98", features = ["parallel"] }
 glob = "0.3.1"
+
+[features]
+default = ["linux-openmp"]
+linux-openmp = []
+openmp = []

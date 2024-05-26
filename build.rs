@@ -32,15 +32,19 @@ fn main() -> anyhow::Result<()> {
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     build.define("DDS_THREADS_GCD", None);
 
-    #[cfg(target_os = "linux")]
-    build.define("DDS_THREADS_OPENMP", None).flag("-fopenmp");
+    #[cfg(any(feature = "openmp", all(target_os = "linux", feature = "linux-openmp")))]
+    build
+        .define("DDS_THREADS_OPENMP", None)
+        .flag_if_supported("-fopenmp")
+        .flag_if_supported("/openmp");
 
     build.try_compile("dds")?;
 
     // This line must follow the cc::Build::try_compile call to ensure correct
     // linking order.
-    #[cfg(target_os = "linux")]
-    println!("cargo:rustc-link-lib=gomp");
+    #[cfg(not(windows))]
+    #[cfg(any(feature = "openmp", all(target_os = "linux", feature = "linux-openmp")))]
+    println!("cargo:rustc-link-arg=-fopenmp");
 
     Ok(())
 }
