@@ -2,10 +2,6 @@ use glob::glob;
 use std::env;
 use std::path::PathBuf;
 
-#[cfg(windows)]
-#[cfg(feature = "openmp")]
-compile_error!("DDS does not use OpenMP when there is Windows API support");
-
 fn main() -> anyhow::Result<()> {
     // This line must precede the cc::Build::try_compile call to ensure correct
     // linking order.
@@ -36,18 +32,16 @@ fn main() -> anyhow::Result<()> {
     #[cfg(any(target_os = "macos", target_os = "ios"))]
     build.define("DDS_THREADS_GCD", None);
 
-    let has_openmp =
-        cfg!(feature = "openmp") && matches!(build.is_flag_supported("-fopenmp"), Ok(true));
-
-    if has_openmp {
-        build.define("DDS_THREADS_OPENMP", None).flag("-fopenmp");
-    }
-    build.try_compile("dds")?;
-
-    if has_openmp {
+    #[cfg(feature = "openmp")]
+    if matches!(build.is_flag_supported("-fopenmp"), Ok(true)) {
+        build
+            .define("DDS_THREADS_OPENMP", None)
+            .flag("-fopenmp")
+            .try_compile("dds")?;
         // This line must follow the cc::Build::try_compile call to ensure
         // correct linking order.
-        println!("cargo:rustc-link-arg=-fopenmp");
+        return Ok(println!("cargo:rustc-link-arg=-fopenmp"));
     }
-    Ok(())
+
+    Ok(build.try_compile("dds")?)
 }
