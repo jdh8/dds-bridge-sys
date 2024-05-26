@@ -20,6 +20,7 @@ fn main() -> anyhow::Result<()> {
     build
         .cpp(true)
         .files(glob("vendor/src/*.cpp")?.flatten())
+        .std("c++14")
         .define("DDS_THREADS_STL", None)
         .warnings(false)
         .flag_if_supported("-flto")
