@@ -3,7 +3,8 @@ dds-bridge-sys
 [![Crates.io](https://img.shields.io/crates/v/dds-bridge-sys.svg)](https://crates.io/crates/dds-bridge-sys)
 [![Docs.rs](https://docs.rs/dds-bridge-sys/badge.svg)](https://docs.rs/dds-bridge-sys)
 
-Generated bindings to [dds-bridge/dds](https://github.com/dds-bridge/dds)
+Generated bindings to [dds-bridge/dds](https://github.com/dds-bridge/dds),
+the C++ double dummy solver for contract bridge.
 
 ## Supported parallel backends
 This crate supports the following parallel backends (in order of precedence by DDS):
@@ -13,6 +14,6 @@ This crate supports the following parallel backends (in order of precedence by D
 4. C++ [`std::thread`](https://en.cppreference.com/w/cpp/thread/thread)
 
 ## Features
-The default `openmp` feature automatically uses OpenMP if the compiler
+The default `openmp` feature automatically uses OpenMP if the C++ compiler
 supports it.  If this causes issues, you can disable this feature with
 `--no-default-features`.
