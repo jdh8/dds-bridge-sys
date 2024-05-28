@@ -12,6 +12,9 @@ fn main() -> anyhow::Result<()> {
         .use_core()
         .allowlist_file("vendor/.*")
         .clang_arg("-xc++")
+        .derive_default(true)
+        .derive_eq(true)
+        .derive_hash(true)
         .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
         .generate()?
         .write_to_file(PathBuf::from(env::var("OUT_DIR")?).join("bindings.rs"))?;
