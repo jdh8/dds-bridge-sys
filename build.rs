@@ -3,10 +3,6 @@ use std::env;
 use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
-    // This line must precede the cc::Build::try_compile call to ensure correct
-    // linking order.
-    println!("cargo:rustc-link-lib=dds");
-
     bindgen::Builder::default()
         .header("vendor/src/dds.h")
         .use_core()
