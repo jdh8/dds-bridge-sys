@@ -30,15 +30,18 @@ fn main() -> anyhow::Result<()> {
     build.define("DDS_THREADS_GCD", None);
 
     #[cfg(feature = "openmp")]
-    if matches!(build.is_flag_supported("-fopenmp"), Ok(true)) {
-        build
-            .define("DDS_THREADS_OPENMP", None)
-            .flag("-fopenmp")
-            .try_compile("dds")?;
-        // This line must follow the cc::Build::try_compile call to ensure
-        // correct linking order.
-        return Ok(println!("cargo:rustc-link-arg=-fopenmp"));
+    env::var("DEP_OPENMP_FLAG")?.split(' ').for_each(|flag| {
+        build.flag(flag);
+    });
+
+    build.try_compile("dds")?;
+
+    #[cfg(feature = "openmp")]
+    if let Some(link) = env::var_os("DEP_OPENMP_CARGO_LINK_INSTRUCTIONS") {
+        for i in env::split_paths(&link) {
+            println!("cargo:{}", i.display());
+        }
     }
 
-    Ok(build.try_compile("dds")?)
+    Ok(())
 }
