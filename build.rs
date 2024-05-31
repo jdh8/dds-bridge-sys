@@ -21,6 +21,7 @@ fn main() -> anyhow::Result<()> {
         .files(glob("vendor/src/*.cpp")?.flatten())
         .std("c++14")
         .define("DDS_THREADS_STL", None)
+        .link_lib_modifier("+whole-archive")
         .cargo_warnings(false);
 
     #[cfg(windows)]
