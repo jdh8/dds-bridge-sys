@@ -21,7 +21,6 @@ fn main() -> anyhow::Result<()> {
         .files(glob("vendor/src/*.cpp")?.flatten())
         .std("c++14")
         .define("DDS_THREADS_STL", None)
-        .link_lib_modifier("+whole-archive")
         .cargo_warnings(false);
 
     #[cfg(windows)]
@@ -32,15 +31,17 @@ fn main() -> anyhow::Result<()> {
 
     #[cfg(feature = "openmp")]
     env::var("DEP_OPENMP_FLAG")?.split(' ').for_each(|flag| {
-        build.flag(flag);
+        build.flag_if_supported(flag);
     });
 
     build.try_compile("dds")?;
 
     #[cfg(feature = "openmp")]
     if let Some(link) = env::var_os("DEP_OPENMP_CARGO_LINK_INSTRUCTIONS") {
-        for i in env::split_paths(&link) {
-            println!("cargo:{}", i.display());
+        if !link.is_empty() {
+            for i in env::split_paths(&link) {
+                println!("cargo:{}", i.display());
+            }
         }
     }
 

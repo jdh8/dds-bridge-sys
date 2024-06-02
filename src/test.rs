@@ -22,6 +22,7 @@ fn solve_a_special_deal() {
     #[allow(clippy::cast_possible_wrap)]
     const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
     let mut result = crate::ddTableResults::default();
+    unsafe { crate::SetMaxThreads(0) };
     let status = unsafe { crate::CalcDDtable(DEAL, &mut result) };
     assert_eq!(status, SUCCESS);
     assert_eq!(result, SOLUTION);
