@@ -1,6 +1,6 @@
 [package]
 name = "dds-bridge-sys"
-version = "1.2.0"
+version = "1.2.1"
 authors = ["Chen-Pang He (https://jdh8.org)"]
 edition = "2021"
 description = "Generated bindings to DDS, the double dummy solver for bridge"
@@ -18,10 +18,7 @@ glob = "0.3.1"
 
 [features]
 default = ["openmp"]
-openmp = ["dep:openmp-sys"]
-
-[dependencies]
-openmp-sys = { version = "1.2.3", optional = true }
+openmp = []
 
 [profile.dev]
 opt-level = 3
