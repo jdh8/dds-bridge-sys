@@ -13,15 +13,31 @@ fn lock_thread_pool() -> std::sync::MutexGuard<'static, ()> {
     })
 }
 
-fn check(deal: crate::ddTableDeal, solution: crate::ddTableResults) {
+#[allow(clippy::large_types_passed_by_value)]
+fn check(deal: crate::ddTableDeal, solution: crate::ddTableResults, pars: [crate::parResultsMaster; 2]) {
     #[allow(clippy::cast_possible_wrap)]
     const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
-    let mut result = crate::ddTableResults::default();
-    let _guard = lock_thread_pool();
-    let status = unsafe { crate::CalcDDtable(deal, &mut result) };
+    let mut tricks = crate::ddTableResults::default();
+    let status = unsafe {
+        let _guard = lock_thread_pool();
+        crate::CalcDDtable(deal, &mut tricks)
+    };
     assert_eq!(status, SUCCESS);
-    assert_eq!(result, solution);
+    assert_eq!(tricks, solution);
+
+    let mut result = [crate::parResultsMaster::default(); 2];
+    let status = unsafe { crate::SidesParBin(&mut tricks, &mut result[0], 0) };
+    assert_eq!(status, SUCCESS);
+    assert_eq!(result, pars);
 }
+
+const NO_CONTRACT: crate::contractType = crate::contractType {
+    level: 0,
+    denom: 0,
+    seats: 0,
+    underTricks: 0,
+    overTricks: 0,
+};
 
 /// Everyone has a 13-card straight flush, and the par is 7SW=.
 #[test]
@@ -44,7 +60,29 @@ fn solve_four_13_card_straight_flushes() {
             [0, 0, 0, 0],   // NT
         ],
     };
-    check(DEAL, SOLUTION);
+    const CONTRACTS: [crate::contractType; 10] = [
+        crate::contractType {
+            level: 7,
+            denom: 1, // spades
+            seats: 5,
+            underTricks: 0,
+            overTricks: 0,
+        },
+        NO_CONTRACT, NO_CONTRACT, NO_CONTRACT,
+        NO_CONTRACT, NO_CONTRACT, NO_CONTRACT,
+        NO_CONTRACT, NO_CONTRACT, NO_CONTRACT,
+    ];
+    const NS: crate::parResultsMaster = crate::parResultsMaster {
+        score: -1510,
+        number: 1,
+        contracts: CONTRACTS,
+    };
+    const EW: crate::parResultsMaster = crate::parResultsMaster {
+        score: 1510,
+        number: 1,
+        contracts: CONTRACTS,
+    };
+    check(DEAL, SOLUTION, [NS, EW]);
 }
 
 /// Defenders can cash 8 tricks in every strain.
@@ -69,5 +107,10 @@ fn solve_par_5_tricks() {
     const SOLUTION: crate::ddTableResults = crate::ddTableResults {
         resTable: [[5; 4]; 5],
     };
-    check(DEAL, SOLUTION);
+    const PAR: crate::parResultsMaster = crate::parResultsMaster {
+        score: 0,
+        number: 1,
+        contracts: [NO_CONTRACT; 10],
+    };
+    check(DEAL, SOLUTION, [PAR; 2]);
 }
