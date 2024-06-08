@@ -14,7 +14,11 @@ fn lock_thread_pool() -> std::sync::MutexGuard<'static, ()> {
 }
 
 #[allow(clippy::large_types_passed_by_value)]
-fn check(deal: crate::ddTableDeal, solution: crate::ddTableResults, pars: [crate::parResultsMaster; 2]) {
+fn check(
+    deal: crate::ddTableDeal,
+    solution: crate::ddTableResults,
+    pars: [crate::parResultsMaster; 2],
+) {
     #[allow(clippy::cast_possible_wrap)]
     const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
     let mut tricks = crate::ddTableResults::default();
@@ -68,9 +72,15 @@ fn solve_four_13_card_straight_flushes() {
             underTricks: 0,
             overTricks: 0,
         },
-        NO_CONTRACT, NO_CONTRACT, NO_CONTRACT,
-        NO_CONTRACT, NO_CONTRACT, NO_CONTRACT,
-        NO_CONTRACT, NO_CONTRACT, NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
+        NO_CONTRACT,
     ];
     const NS: crate::parResultsMaster = crate::parResultsMaster {
         score: -1510,
@@ -98,10 +108,10 @@ fn solve_par_5_tricks() {
 
     const DEAL: crate::ddTableDeal = crate::ddTableDeal {
         cards: [
-            [AKQJ, X,    XXXX, T987], // N
-            [XXXX, T987, AKQJ, X   ], // E
-            [X,    AKQJ, T987, XXXX], // S
-            [T987, XXXX, X,    AKQJ], // W
+            [AKQJ, X, XXXX, T987], // N
+            [XXXX, T987, AKQJ, X], // E
+            [X, AKQJ, T987, XXXX], // S
+            [T987, XXXX, X, AKQJ], // W
         ],
     };
     const SOLUTION: crate::ddTableResults = crate::ddTableResults {
