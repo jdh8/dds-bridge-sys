@@ -13,7 +13,7 @@
 //! Also note that functions using the thread pool are not reentrant.  You may
 //! want to use a mutex to ensure that only one thread is using the thread
 //! pool.
-#![no_std]
+#![cfg_attr(not(test), no_std)]
 #![allow(non_upper_case_globals, non_camel_case_types, non_snake_case)]
 include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 
