@@ -124,3 +124,73 @@ fn solve_par_5_tricks() {
     };
     check(DEAL, SOLUTION, [PAR; 2]);
 }
+
+/// A symmetric deal where everyone makes 1NT but no suit contract
+///
+/// This example is taken from
+/// <http://www.rpbridge.net/7a23.htm#2>.
+#[test]
+#[allow(clippy::unusual_byte_groupings)]
+fn solve_everyone_makes_1nt() {
+    const A54: core::ffi::c_uint  = 0b10000_0000_1100_00;
+    const QJ32: core::ffi::c_uint = 0b00110_0000_0011_00;
+    const K976: core::ffi::c_uint = 0b01000_1011_0000_00;
+    const T8: core::ffi::c_uint   = 0b00001_0100_0000_00;
+
+    const DEAL: crate::ddTableDeal = crate::ddTableDeal {
+        cards: [
+            [A54, QJ32, K976, T8], // N
+            [T8, A54, QJ32, K976], // E
+            [K976, T8, A54, QJ32], // S
+            [QJ32, K976, T8, A54], // W
+        ],
+    };
+    const SOLUTION: crate::ddTableResults = crate::ddTableResults {
+        resTable: [[6; 4], [6; 4], [6; 4], [6; 4], [7; 4]],
+    };
+    const NS: crate::parResultsMaster = crate::parResultsMaster {
+        score: 90,
+        number: 1,
+        contracts: [
+            crate::contractType {
+                level: 1,
+                denom: 0, // notrump
+                seats: 4,
+                underTricks: 0,
+                overTricks: 0,
+            },
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+        ],
+    };
+    const EW: crate::parResultsMaster = crate::parResultsMaster {
+        score: 90,
+        number: 1,
+        contracts: [
+            crate::contractType {
+                level: 1,
+                denom: 0, // notrump
+                seats: 5,
+                underTricks: 0,
+                overTricks: 0,
+            },
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+            NO_CONTRACT,
+        ],
+    };
+    check(DEAL, SOLUTION, [NS, EW]);
+}
