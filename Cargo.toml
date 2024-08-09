@@ -1,6 +1,6 @@
 [package]
 name = "dds-bridge-sys"
-version = "2.0.1"
+version = "2.0.2"
 authors = ["Chen-Pang He (https://jdh8.org)"]
 edition = "2021"
 description = "Generated bindings to DDS, the double dummy solver for bridge"
