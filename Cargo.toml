@@ -12,7 +12,7 @@ exclude = ["/vendor/hands", "/vendor/doc"]
 
 [build-dependencies]
 anyhow = "1.0.95"
-bindgen = "0.71.1"
+bindgen = "0.72.1"
 cc = { version = "1.2.13", features = ["parallel"] }
 glob = "0.3.2"
 
