@@ -132,10 +132,10 @@ fn solve_par_5_tricks() {
 #[test]
 #[allow(clippy::unusual_byte_groupings)]
 fn solve_everyone_makes_1nt() {
-    const A54: core::ffi::c_uint  = 0b10000_0000_1100_00;
+    const A54 : core::ffi::c_uint = 0b10000_0000_1100_00;
     const QJ32: core::ffi::c_uint = 0b00110_0000_0011_00;
     const K976: core::ffi::c_uint = 0b01000_1011_0000_00;
-    const T8: core::ffi::c_uint   = 0b00001_0100_0000_00;
+    const T8  : core::ffi::c_uint = 0b00001_0100_0000_00;
 
     const DEAL: crate::ddTableDeal = crate::ddTableDeal {
         cards: [
