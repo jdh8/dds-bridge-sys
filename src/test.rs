@@ -1,17 +1,10 @@
-fn lock_thread_pool() -> std::sync::MutexGuard<'static, ()> {
-    use once_cell::sync::Lazy;
-    use std::sync::Mutex;
+use parking_lot::Mutex;
+use std::sync::LazyLock;
 
-    static POOL: Lazy<Mutex<()>> = Lazy::new(|| {
-        unsafe { crate::SetMaxThreads(0) };
-        Mutex::new(())
-    });
-
-    POOL.lock().unwrap_or_else(|e| {
-        POOL.clear_poison();
-        e.into_inner()
-    })
-}
+static THREAD_POOL: LazyLock<Mutex<()>> = LazyLock::new(|| {
+    unsafe { crate::SetMaxThreads(0) };
+    Mutex::new(())
+});
 
 #[allow(clippy::large_types_passed_by_value)]
 fn check(
@@ -23,14 +16,14 @@ fn check(
     const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
     let mut tricks = crate::ddTableResults::default();
     let status = unsafe {
-        let _guard = lock_thread_pool();
-        crate::CalcDDtable(deal, &mut tricks)
+        let _guard = THREAD_POOL.lock();
+        crate::CalcDDtable(deal, &raw mut tricks)
     };
     assert_eq!(status, SUCCESS);
     assert_eq!(tricks, solution);
 
     let mut result = [crate::parResultsMaster::default(); 2];
-    let status = unsafe { crate::SidesParBin(&mut tricks, &mut result[0], 0) };
+    let status = unsafe { crate::SidesParBin(&raw mut tricks, &raw mut result[0], 0) };
     assert_eq!(status, SUCCESS);
     assert_eq!(result, pars);
 }
@@ -132,10 +125,10 @@ fn solve_par_5_tricks() {
 #[test]
 #[allow(clippy::unusual_byte_groupings)]
 fn solve_everyone_makes_1nt() {
-    const A54 : core::ffi::c_uint = 0b10000_0000_1100_00;
+    const A54: core::ffi::c_uint = 0b10000_0000_1100_00;
     const QJ32: core::ffi::c_uint = 0b00110_0000_0011_00;
     const K976: core::ffi::c_uint = 0b01000_1011_0000_00;
-    const T8  : core::ffi::c_uint = 0b00001_0100_0000_00;
+    const T8: core::ffi::c_uint = 0b00001_0100_0000_00;
 
     const DEAL: crate::ddTableDeal = crate::ddTableDeal {
         cards: [
