@@ -1,6 +1,6 @@
 [package]
 name = "dds-bridge-sys"
-version = "2.0.6"
+version = "2.1.0"
 authors = ["Chen-Pang He (https://jdh8.org)"]
 edition = "2024"
 rust-version = "1.85"
@@ -13,6 +13,11 @@ license = "Apache-2.0"
 categories = ["game-development", "external-ffi-bindings", "no-std"]
 keywords = ["bridge", "double-dummy"]
 exclude = ["/vendor/hands", "/vendor/doc"]
+
+[features]
+# Let DDS write "dump.txt" to the cwd on solver errors. Off by default.
+# The Rust wrapper already surfaces errors as typed SystemError variants.
+dump-error = []
 
 [build-dependencies]
 anyhow = "1"

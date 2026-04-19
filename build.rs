@@ -15,13 +15,18 @@ fn main() -> anyhow::Result<()> {
         .generate()?
         .write_to_file(std::path::PathBuf::from(out_dir).join("bindings.rs"))?;
 
-    cc::Build::new()
+    let mut build = cc::Build::new();
+    build
         .cpp(true)
         .files(glob::glob("vendor/src/*.cpp")?.flatten())
         .std("c++14")
         .define("DDS_THREADS_STL", None)
-        .cargo_warnings(false)
-        .try_compile("dds")?;
+        .cargo_warnings(false);
 
+    if std::env::var_os("CARGO_FEATURE_DUMP_ERROR").is_none() {
+        build.define("DDS_NO_DUMP_ON_ERROR", None);
+    }
+
+    build.try_compile("dds")?;
     Ok(())
 }
