@@ -23,8 +23,19 @@ fn main() -> anyhow::Result<()> {
         .define("DDS_THREADS_STL", None)
         .cargo_warnings(false);
 
-    if std::env::var_os("CARGO_FEATURE_DUMP_ERROR").is_none() {
+    if std::env::var_os("CARGO_FEATURE_DEBUG_DUMP").is_none() {
         build.define("DDS_NO_DUMP_ON_ERROR", None);
+    }
+
+    for (feat, macro_name) in [
+        ("CARGO_FEATURE_DEBUG_TIMING", "DDS_TIMING"),
+        ("CARGO_FEATURE_DEBUG_AB_STATS", "DDS_AB_STATS"),
+        ("CARGO_FEATURE_DEBUG_TT_STATS", "DDS_TT_STATS"),
+        ("CARGO_FEATURE_DEBUG_MOVES", "DDS_MOVES"),
+    ] {
+        if std::env::var_os(feat).is_some() {
+            build.define(macro_name, None);
+        }
     }
 
     build.try_compile("dds")?;

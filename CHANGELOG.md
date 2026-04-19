@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.1.0] - 2026-04-20
+
+### Added
+
+- Cargo features `debug-dump`, `debug-timing`, `debug-ab-stats`,
+  `debug-tt-stats`, `debug-moves` — enable upstream DDS debug/profiling
+  output files (off by default; each emits per-thread `.txt` files into
+  the cwd)
+
 ## [2.0.5] - 2026-04-17
 
 ### Documentation
@@ -25,5 +34,6 @@
 - Update Rust to 2024
 - Update bindgen
 
+[2.1.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.0
 [2.0.5]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.0.5
 [2.0.4]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.0.4

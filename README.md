@@ -62,3 +62,15 @@ Call one of the following once at startup before any other function:
 
 - [`SetMaxThreads`] — initialize (`0` = auto-configure)
 - [`SetResources`] — set memory and thread limits
+
+## Cargo features
+
+All features are off by default. The `debug-*` diagnostic features cause the
+C++ solver to write per-thread `.txt` files into the current working directory
+at runtime; they are intended for solver development, not production use.
+
+- `debug-dump` — let DDS write `dump.txt` on solver errors
+- `debug-timing` — function timings → `timer.*.txt`
+- `debug-ab-stats` — alpha-beta search stats → `ABstats.*.txt`
+- `debug-tt-stats` — transposition-table memory usage → `TTstats.*.txt`
+- `debug-moves` — move-generation quality → `movestats.*.txt`

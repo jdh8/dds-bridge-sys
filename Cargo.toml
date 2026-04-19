@@ -15,9 +15,20 @@ keywords = ["bridge", "double-dummy"]
 exclude = ["/vendor/hands", "/vendor/doc"]
 
 [features]
-# Let DDS write "dump.txt" to the cwd on solver errors. Off by default.
-# The Rust wrapper already surfaces errors as typed SystemError variants.
-dump-error = []
+# Let DDS write "dump.txt" to the cwd on solver errors. Diagnostic; off by default.
+debug-dump = []
+
+# Write per-thread "timer.*.txt" with function timings. Diagnostic; off by default.
+debug-timing = []
+
+# Write per-thread "ABstats.*.txt" with alpha-beta search stats. Diagnostic; off by default.
+debug-ab-stats = []
+
+# Write per-thread "TTstats.*.txt" with transposition-table memory usage. Diagnostic; off by default.
+debug-tt-stats = []
+
+# Write per-thread "movestats.*.txt" with move-generation quality stats. Diagnostic; off by default.
+debug-moves = []
 
 [build-dependencies]
 anyhow = "1"
