@@ -10,11 +10,7 @@ fn main() {
         info.assume_init()
     };
 
-    println!("DDS Version: {}.{}.{}", info.major, info.minor, info.patch);
-    println!("Number of threads: {}", info.noOfThreads);
-
-    println!(
-        "Thread sizes: {}",
-        unsafe { CStr::from_ptr(info.threadSizes.as_ptr()) }.to_string_lossy()
-    );
+    println!("System info: {}", unsafe {
+        CStr::from_ptr(info.systemString.as_ptr()).to_string_lossy()
+    });
 }
