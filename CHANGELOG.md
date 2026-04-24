@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.1.1] - 2026-04-24
+
+### Changed
+
+- Simplify `examples/info.rs` to print DDS's `systemString` (comprehensive
+  version/compiler/system info) in a single line, instead of per-field output
+  for version, thread count, and thread sizes
+
+### Internal
+
+- Rename `mod test` to `mod tests` in `src/lib.rs` to mirror the `tests/`
+  directory convention and avoid visual collision with `#[cfg(test)]`
+- Allow `clippy::all` and `clippy::pedantic` in the generated bindings module so
+  lints aren't enforced on auto-generated code
+- Add `CLAUDE.md` with contributor notes for AI-assisted development
+- Require Windows CI to pass: drop `continue-on-error` on the Windows test
+  matrix leg so failures block the workflow instead of being silently ignored
+
 ## [2.1.0] - 2026-04-20
 
 ### Added
@@ -34,6 +52,7 @@
 - Update Rust to 2024
 - Update bindgen
 
+[2.1.1]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.1
 [2.1.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.0
 [2.0.5]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.0.5
 [2.0.4]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.0.4
