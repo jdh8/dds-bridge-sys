@@ -17,6 +17,9 @@
 - Add `CLAUDE.md` with contributor notes for AI-assisted development
 - Require Windows CI to pass: drop `continue-on-error` on the Windows test
   matrix leg so failures block the workflow instead of being silently ignored
+- Ignore diagnostic dumps emitted by the `debug-*` features (`dump.txt`,
+  `timer*.txt`, `ABstats*.txt`, `TTstats*.txt`, `movestats*.txt`) in
+  `.gitignore`
 
 ## [2.1.0] - 2026-04-20
 

@@ -12,3 +12,10 @@ Cargo.lock
 
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
+
+# Diagnostic dumps from DDS optional debug features
+dump.txt
+timer*.txt
+ABstats*.txt
+TTstats*.txt
+movestats*.txt

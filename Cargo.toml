@@ -1,6 +1,6 @@
 [package]
 name = "dds-bridge-sys"
-version = "2.1.1-dev"
+version = "2.1.1"
 authors = ["Chen-Pang He (https://jdh8.org)"]
 edition = "2024"
 rust-version = "1.85"
@@ -18,16 +18,16 @@ exclude = ["/vendor/hands", "/vendor/doc"]
 # Let DDS write "dump.txt" to the cwd on solver errors. Diagnostic; off by default.
 debug-dump = []
 
-# Write per-thread "timer.*.txt" with function timings. Diagnostic; off by default.
+# Write per-thread "timer*.txt" with function timings. Diagnostic; off by default.
 debug-timing = []
 
-# Write per-thread "ABstats.*.txt" with alpha-beta search stats. Diagnostic; off by default.
+# Write per-thread "ABstats*.txt" with alpha-beta search stats. Diagnostic; off by default.
 debug-ab-stats = []
 
-# Write per-thread "TTstats.*.txt" with transposition-table memory usage. Diagnostic; off by default.
+# Write per-thread "TTstats*.txt" with transposition-table memory usage. Diagnostic; off by default.
 debug-tt-stats = []
 
-# Write per-thread "movestats.*.txt" with move-generation quality stats. Diagnostic; off by default.
+# Write per-thread "movestats*.txt" with move-generation quality stats. Diagnostic; off by default.
 debug-moves = []
 
 [build-dependencies]
