@@ -6,7 +6,7 @@ fn main() -> anyhow::Result<()> {
     bindgen::Builder::default()
         .header("src/wrapper.h")
         .use_core()
-        .allowlist_file("(vendor/.*|src/dds_context\\.h)")
+        .allowlist_file("(vendor/.*|.*[/\\\\]dds_context\\.h)")
         .clang_arg("-xc++")
         .clang_arg("-Ivendor/library/src")
         .clang_arg("-Isrc")
