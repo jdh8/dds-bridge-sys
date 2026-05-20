@@ -28,49 +28,68 @@ type manages the mutex for you.
 
 ## Thread Safety
 
-Functions fall into four categories:
+DDS 3 removed the internal thread pool: `SetMaxThreads(N>1)` is clamped to 1,
+legacy batch entry points run sequentially, and the only path to parallelism
+is the new per-context API exposed here as `DdsSolverContext`. Functions fall
+into four categories.
 
-### Non-reentrant — exclusive thread-pool access required
+### Modern `SolverContext` API — one context per OS thread
 
-These functions drive the internal thread pool and must not be called
-concurrently.  Protect all calls with a single mutex:
+Each `DdsSolverContext` owns private solver state (thread-local memory,
+transposition table, search state). Multiple contexts on multiple threads is
+the upstream-recommended parallelism model — give each worker its own context,
+never share one.
 
-- [`CalcDDtable`] / [`CalcDDtablePBN`] — compute a full DD table (threads per strain)
-- [`CalcAllTables`] / [`CalcAllTablesPBN`] — batch DD tables
-- [`SolveAllBoards`] / [`SolveAllBoardsBin`] — batch board solving
+- [`dds_solver_context_new`] / [`dds_solver_context_free`] — lifecycle
+- [`dds_solve_board`] — single-board solve
+- [`dds_calc_dd_table`] / [`dds_calc_dd_table_pbn`] — full DD table
+- [`dds_calc_par`] / [`dds_calc_par_from_table`] — par calculation
+- [`dds_solver_context_reset_for_solve`] / [`dds_solver_context_clear_tt`]
+  / [`dds_solver_context_resize_tt`] / [`dds_solver_context_configure_tt`]
+  / [`dds_solver_context_dispose_trans_table`] — TT lifecycle
+
+### Sequential inside DDS — legacy batch APIs
+
+These functions used to drive the internal thread pool. As of DDS 3 they
+execute sequentially in a single internal thread regardless of
+`SetMaxThreads(N)`. Concurrent callers must drive parallelism from the
+application side (one `DdsSolverContext` per worker, in preference to these).
+
+- [`CalcDDtable`] / [`CalcDDtablePBN`]
+- [`CalcAllTables`] / [`CalcAllTablesPBN`]
+- [`SolveAllBoards`] / [`SolveAllBoardsBin`]
 - [`SolveAllChunksBin`] / [`SolveAllChunksPBN`] (deprecated aliases)
-- [`AnalyseAllPlaysBin`] / [`AnalyseAllPlaysPBN`] — batch play analysis
+- [`AnalyseAllPlaysBin`] / [`AnalyseAllPlaysPBN`]
 
-### Reentrant — explicit `threadIndex` parameter
+### Legacy single-board APIs — `threadIndex=0` only
 
-These are safe to call from multiple threads simultaneously.  Each concurrent
-call must use a distinct `threadIndex` in `0..SetMaxThreads(0)`.
+These accept a `threadIndex` parameter, but DDS 3 only allocates one internal
+slot; any `threadIndex>0` returns `RETURN_THREAD_INDEX`. Each call internally
+constructs a fresh `SolverContext`, so TT state is not retained across calls.
+Concurrent calls from multiple threads are safe (each gets its own internal
+context) but pay full setup cost per call; prefer the modern API above for
+hot paths.
 
 - [`SolveBoard`] / [`SolveBoardPBN`]
 - [`AnalysePlayBin`] / [`AnalysePlayPBN`]
 
-### Always safe — no thread pool involved
+### Always safe — no solver state involved
 
 - Par: [`Par`], [`CalcPar`], [`CalcParPBN`], [`SidesPar`], [`DealerPar`],
   [`DealerParBin`], [`SidesParBin`]
 - Text: [`ConvertToDealerTextFormat`], [`ConvertToSidesTextFormat`]
 - Utilities: [`GetDDSInfo`], [`ErrorMessage`]
 
-### Thread-pool management
-
-Call one of the following once at startup before any other function:
+### Thread-pool management (deprecated upstream, retained for compatibility)
 
 - [`SetMaxThreads`] — initialize (`0` = auto-configure)
 - [`SetResources`] — set memory and thread limits
 
+Both functions still need to be called once at startup before any legacy entry
+point. They are no-ops for the modern `DdsSolverContext` path, which manages
+its own resources per instance.
+
 ## Cargo features
 
-All features are off by default. The `debug-*` diagnostic features cause the
-C++ solver to write per-thread `.txt` files into the current working directory
-at runtime; they are intended for solver development, not production use.
-
-- `debug-dump` — let DDS write `dump.txt` on solver errors
-- `debug-timing` — function timings → `timer.*.txt`
-- `debug-ab-stats` — alpha-beta search stats → `ABstats.*.txt`
-- `debug-tt-stats` — transposition-table memory usage → `TTstats.*.txt`
-- `debug-moves` — move-generation quality → `movestats.*.txt`
+- `debug-dump` (off by default) — let DDS write `dump.txt` to the current
+  working directory on solver errors. Intended for solver development.

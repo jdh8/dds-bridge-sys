@@ -1,5 +1,37 @@
 # Changelog
 
+## [3.1.0] - 2026-05-21
+
+### Added
+
+- `DdsSolverContext` opaque handle and `dds_solver_context_*` /
+  `dds_solve_board` / `dds_calc_dd_table` / `dds_calc_dd_table_pbn` /
+  `dds_calc_par` / `dds_calc_par_from_table` C entry points for DDS 3's
+  modern `SolverContext` API. A small `extern "C"` shim
+  (`src/dds_context.{h,cpp}`) compiles alongside the vendor sources and is
+  bindgen-wrapped like the rest of the FFI surface. One context per OS
+  thread; safe for concurrent use across threads when each thread owns
+  its own context.
+
+### Documented (existing v3.0.0 behavior)
+
+- Internal batch threading in DDS is removed: `SolveAllBoardsBin`,
+  `CalcAllTables`, and `AnalyseAllPlays*` execute sequentially inside
+  DDS regardless of `SetMaxThreads(N)`. Concurrent callers must drive
+  parallelism from the application side, preferably via per-thread
+  `DdsSolverContext` instances.
+- Legacy `SolveBoard(threadIndex>0)` returns `RETURN_THREAD_INDEX`; only
+  `threadIndex=0` remains valid on the legacy entry point, and each call
+  builds a fresh internal context (no TT reuse across calls).
+
+### Internal
+
+- Bindgen now reads `src/wrapper.h` (which includes both `api/dll.h`
+  and the new `dds_context.h`) instead of `api/dll.h` directly.
+- Bindgen runs with `prepend_enum_name(false)` so enum constants keep
+  their natural C names (e.g., `DDS_TT_KIND_LARGE`) without the
+  `<TypeName>_` prefix that bindgen would otherwise emit.
+
 ## [3.0.0] - 2026-05-20
 
 ### Breaking

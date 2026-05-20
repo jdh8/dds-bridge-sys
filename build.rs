@@ -4,11 +4,13 @@ fn main() -> anyhow::Result<()> {
     let out_dir = std::env::var_os("OUT_DIR").context("OUT_DIR not set")?;
 
     bindgen::Builder::default()
-        .header("vendor/library/src/api/dll.h")
+        .header("src/wrapper.h")
         .use_core()
-        .allowlist_file("vendor/.*")
+        .allowlist_file("(vendor/.*|src/dds_context\\.h)")
         .clang_arg("-xc++")
         .clang_arg("-Ivendor/library/src")
+        .clang_arg("-Isrc")
+        .prepend_enum_name(false)
         .derive_default(true)
         .derive_eq(true)
         .derive_hash(true)
@@ -24,7 +26,9 @@ fn main() -> anyhow::Result<()> {
     build
         .cpp(true)
         .files(&sources)
+        .file("src/dds_context.cpp")
         .include("vendor/library/src")
+        .include("src")
         .std("c++20")
         .flag("-include")
         .flag("sstream")

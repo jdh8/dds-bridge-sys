@@ -118,6 +118,52 @@ fn solve_par_5_tricks() {
     check(DEAL, SOLUTION, [PAR; 2]);
 }
 
+/// Smoke test for the modern `SolverContext` C shim.
+///
+/// Solves the four-straight-flush deal via `dds_calc_dd_table` and asserts
+/// the same trick table as the legacy `CalcDDtable` path.
+#[test]
+fn solver_context_solve_dd_table() {
+    const MASK: core::ffi::c_uint = ((1 << 13) - 1) << 2;
+    const DEAL: crate::DdTableDeal = crate::DdTableDeal {
+        cards: [
+            [0, 0, 0, MASK],
+            [0, 0, MASK, 0],
+            [0, MASK, 0, 0],
+            [MASK, 0, 0, 0],
+        ],
+    };
+    const SOLUTION: crate::DdTableResults = crate::DdTableResults {
+        res_table: [
+            [0, 13, 0, 13],
+            [13, 0, 13, 0],
+            [0, 13, 0, 13],
+            [13, 0, 13, 0],
+            [0, 0, 0, 0],
+        ],
+    };
+    #[allow(clippy::cast_possible_wrap)]
+    const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
+
+    let cfg = crate::DdsSolverConfig {
+        tt_kind: crate::DDS_TT_KIND_LARGE.try_into().unwrap(),
+        tt_mem_default_mb: 0,
+        tt_mem_maximum_mb: 0,
+    };
+    let deal = DEAL;
+    let mut tricks = crate::DdTableResults::default();
+    let status = unsafe {
+        let _guard = THREAD_POOL.lock();
+        let ctx = crate::dds_solver_context_new(&raw const cfg);
+        assert!(!ctx.is_null());
+        let s = crate::dds_calc_dd_table(ctx, &raw const deal, &raw mut tricks);
+        crate::dds_solver_context_free(ctx);
+        s
+    };
+    assert_eq!(status, SUCCESS);
+    assert_eq!(tricks, SOLUTION);
+}
+
 /// A symmetric deal where everyone makes 1NT but no suit contract
 ///
 /// This example is taken from
