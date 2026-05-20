@@ -8,13 +8,13 @@ static THREAD_POOL: LazyLock<Mutex<()>> = LazyLock::new(|| {
 
 #[allow(clippy::large_types_passed_by_value)]
 fn check(
-    deal: crate::ddTableDeal,
-    solution: crate::ddTableResults,
-    pars: [crate::parResultsMaster; 2],
+    deal: crate::DdTableDeal,
+    solution: crate::DdTableResults,
+    pars: [crate::ParResultsMaster; 2],
 ) {
     #[allow(clippy::cast_possible_wrap)]
     const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
-    let mut tricks = crate::ddTableResults::default();
+    let mut tricks = crate::DdTableResults::default();
     let status = unsafe {
         let _guard = THREAD_POOL.lock();
         crate::CalcDDtable(deal, &raw mut tricks)
@@ -22,25 +22,25 @@ fn check(
     assert_eq!(status, SUCCESS);
     assert_eq!(tricks, solution);
 
-    let mut result = [crate::parResultsMaster::default(); 2];
+    let mut result = [crate::ParResultsMaster::default(); 2];
     let status = unsafe { crate::SidesParBin(&raw mut tricks, &raw mut result[0], 0) };
     assert_eq!(status, SUCCESS);
     assert_eq!(result, pars);
 }
 
-const NO_CONTRACT: crate::contractType = crate::contractType {
+const NO_CONTRACT: crate::ContractType = crate::ContractType {
     level: 0,
     denom: 0,
     seats: 0,
-    underTricks: 0,
-    overTricks: 0,
+    under_tricks: 0,
+    over_tricks: 0,
 };
 
 /// Everyone has a 13-card straight flush, and the par is 7SW=.
 #[test]
 fn solve_four_13_card_straight_flushes() {
     const MASK: core::ffi::c_uint = ((1 << 13) - 1) << 2;
-    const DEAL: crate::ddTableDeal = crate::ddTableDeal {
+    const DEAL: crate::DdTableDeal = crate::DdTableDeal {
         cards: [
             [0, 0, 0, MASK], // N
             [0, 0, MASK, 0], // E
@@ -48,8 +48,8 @@ fn solve_four_13_card_straight_flushes() {
             [MASK, 0, 0, 0], // W
         ],
     };
-    const SOLUTION: crate::ddTableResults = crate::ddTableResults {
-        resTable: [
+    const SOLUTION: crate::DdTableResults = crate::DdTableResults {
+        res_table: [
             [0, 13, 0, 13], // S
             [13, 0, 13, 0], // H
             [0, 13, 0, 13], // D
@@ -57,13 +57,13 @@ fn solve_four_13_card_straight_flushes() {
             [0, 0, 0, 0],   // NT
         ],
     };
-    const CONTRACTS: [crate::contractType; 10] = [
-        crate::contractType {
+    const CONTRACTS: [crate::ContractType; 10] = [
+        crate::ContractType {
             level: 7,
             denom: 1, // spades
             seats: 5,
-            underTricks: 0,
-            overTricks: 0,
+            under_tricks: 0,
+            over_tricks: 0,
         },
         NO_CONTRACT,
         NO_CONTRACT,
@@ -75,12 +75,12 @@ fn solve_four_13_card_straight_flushes() {
         NO_CONTRACT,
         NO_CONTRACT,
     ];
-    const NS: crate::parResultsMaster = crate::parResultsMaster {
+    const NS: crate::ParResultsMaster = crate::ParResultsMaster {
         score: -1510,
         number: 1,
         contracts: CONTRACTS,
     };
-    const EW: crate::parResultsMaster = crate::parResultsMaster {
+    const EW: crate::ParResultsMaster = crate::ParResultsMaster {
         score: 1510,
         number: 1,
         contracts: CONTRACTS,
@@ -99,7 +99,7 @@ fn solve_par_5_tricks() {
     const XXXX: core::ffi::c_uint = 0xF << 3;
     const X: core::ffi::c_uint = 1 << 2;
 
-    const DEAL: crate::ddTableDeal = crate::ddTableDeal {
+    const DEAL: crate::DdTableDeal = crate::DdTableDeal {
         cards: [
             [AKQJ, X, XXXX, T987], // N
             [XXXX, T987, AKQJ, X], // E
@@ -107,10 +107,10 @@ fn solve_par_5_tricks() {
             [T987, XXXX, X, AKQJ], // W
         ],
     };
-    const SOLUTION: crate::ddTableResults = crate::ddTableResults {
-        resTable: [[5; 4]; 5],
+    const SOLUTION: crate::DdTableResults = crate::DdTableResults {
+        res_table: [[5; 4]; 5],
     };
-    const PAR: crate::parResultsMaster = crate::parResultsMaster {
+    const PAR: crate::ParResultsMaster = crate::ParResultsMaster {
         score: 0,
         number: 1,
         contracts: [NO_CONTRACT; 10],
@@ -130,7 +130,7 @@ fn solve_everyone_makes_1nt() {
     const K976: core::ffi::c_uint = 0b01000_1011_0000_00;
     const T8: core::ffi::c_uint = 0b00001_0100_0000_00;
 
-    const DEAL: crate::ddTableDeal = crate::ddTableDeal {
+    const DEAL: crate::DdTableDeal = crate::DdTableDeal {
         cards: [
             [A54, QJ32, K976, T8], // N
             [T8, A54, QJ32, K976], // E
@@ -138,19 +138,19 @@ fn solve_everyone_makes_1nt() {
             [QJ32, K976, T8, A54], // W
         ],
     };
-    const SOLUTION: crate::ddTableResults = crate::ddTableResults {
-        resTable: [[6; 4], [6; 4], [6; 4], [6; 4], [7; 4]],
+    const SOLUTION: crate::DdTableResults = crate::DdTableResults {
+        res_table: [[6; 4], [6; 4], [6; 4], [6; 4], [7; 4]],
     };
-    const NS: crate::parResultsMaster = crate::parResultsMaster {
+    const NS: crate::ParResultsMaster = crate::ParResultsMaster {
         score: 90,
         number: 1,
         contracts: [
-            crate::contractType {
+            crate::ContractType {
                 level: 1,
                 denom: 0, // notrump
                 seats: 4,
-                underTricks: 0,
-                overTricks: 0,
+                under_tricks: 0,
+                over_tricks: 0,
             },
             NO_CONTRACT,
             NO_CONTRACT,
@@ -163,16 +163,16 @@ fn solve_everyone_makes_1nt() {
             NO_CONTRACT,
         ],
     };
-    const EW: crate::parResultsMaster = crate::parResultsMaster {
+    const EW: crate::ParResultsMaster = crate::ParResultsMaster {
         score: 90,
         number: 1,
         contracts: [
-            crate::contractType {
+            crate::ContractType {
                 level: 1,
                 denom: 0, // notrump
                 seats: 5,
-                underTricks: 0,
-                overTricks: 0,
+                under_tricks: 0,
+                over_tricks: 0,
             },
             NO_CONTRACT,
             NO_CONTRACT,

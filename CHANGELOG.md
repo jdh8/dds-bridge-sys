@@ -1,5 +1,52 @@
 # Changelog
 
+## [3.0.0] - 2026-05-20
+
+### Breaking
+
+- Bump vendored `dds` library to **v3.0.0** (was v2.8.2-220). Bindgen now reads
+  the public C API header `vendor/library/src/api/dll.h` only; the broader set
+  of C++ internals previously surfaced through `vendor/src/dds.h` is no longer
+  exposed in the FFI bindings.
+- Upstream renamed every public struct from camelCase to PascalCase and renamed
+  several struct fields from camelCase to snake_case. The bindgen output now
+  mirrors these names verbatim. Notable renames:
+  - `futureTricks` → `FutureTricks`
+  - `deal` → `Deal`, `dealPBN` → `DealPBN`
+  - `boards` → `Boards`, `boardsPBN` → `BoardsPBN`
+  - `solvedBoards` → `SolvedBoards` (field `solvedBoard` → `solved_board`)
+  - `ddTableDeal[s]` / `ddTableDeal[s]PBN` → `DdTableDeal[s]` /
+    `DdTableDeal[s]PBN` (field `noOfTables` → `no_of_tables`)
+  - `ddTableResults` → `DdTableResults` (field `resTable` → `res_table`)
+  - `ddTablesRes` → `DdTablesRes`
+  - `parResults` → `ParResults`, `allParResults` → `AllParResults`
+    (field `presults` → `par_results`)
+  - `parResultsDealer` → `ParResultsDealer`
+  - `parResultsMaster` → `ParResultsMaster`
+  - `parTextResults` → `ParTextResults`
+  - `contractType` → `ContractType` (fields `underTricks` → `under_tricks`,
+    `overTricks` → `over_tricks`)
+  - `playTraceBin` / `playTracePBN` / `playTracesBin` / `playTracesPBN` →
+    `PlayTraceBin` / `PlayTracePBN` / `PlayTracesBin` / `PlayTracesPBN`
+  - `solvedPlay[s]` → `SolvedPlay[s]`
+  - `Boards`, `SolvedBoards`, `DdTablesRes`, `PlayTracesBin`, `SolvedPlays`
+    each rename `noOfBoards` → `no_of_boards`
+  - `DDSInfo` is unchanged.
+- Removed Cargo features `debug-timing`, `debug-ab-stats`, `debug-tt-stats`,
+  `debug-moves`. The corresponding upstream code paths no longer compile in
+  v3.0.0. `debug-dump` is retained.
+
+### Changed
+
+- Build C++ sources with `-std=c++20` (was c++14), matching upstream's Bazel
+  config.
+- Compile the full new vendor tree (`vendor/library/src/**/*.cpp` across
+  `system/`, `moves/`, `heuristic_sorting/`, `utility/`, `lookup_tables/`,
+  `solver_context/`, `trans_table/`) instead of only `vendor/src/*.cpp`.
+- Force-include `<sstream>` and `<iomanip>` via `cc::Build` flags to work
+  around upstream sources that depend on these standard headers transitively
+  but never include them.
+
 ## [2.1.1] - 2026-04-24
 
 ### Changed
