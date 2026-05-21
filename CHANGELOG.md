@@ -1,5 +1,22 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Repoint the `vendor` submodule at the `jdh8/dds` fork's
+  `pons-parallel-calc` branch, which removes the file-scope `ParamType
+  cparam` global from `library/src/calc_tables.cpp`. Before the patch, two
+  threads each holding their own `DdsSolverContext` and calling
+  `dds_calc_dd_table` simultaneously could race on `cparam.bop` /
+  `cparam.solvedp` / `cparam.error` and write results into the wrong
+  output buffer — contradicting the 3.1.0 changelog's "safe for
+  concurrent use across threads" claim, which was true for
+  `dds_solve_board` but not for `dds_calc_dd_table`. The patch also drops
+  the now-unreachable `scheduler.RegisterRun(...)` call and reduces the
+  legacy `calc_single_common` / `copy_calc_single` / `calc_chunk_common`
+  shims to empty stubs so `init.cpp`'s `System` constructor still links.
+
 ## [3.1.0] - 2026-05-21
 
 ### Added
