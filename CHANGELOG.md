@@ -8,9 +8,34 @@
   build, so clangd (and any other LSP that reads the compile-commands format)
   can resolve vendor headers regardless of where the file being edited lives
   in the tree. The file is per-machine (absolute `directory` field) and
-  gitignored; the previous hand-tuned `.clangd` is removed because its
-  relative include paths only worked for files in `src/` and broke on every
-  vendor file. Collaborators get IntelliSense after a single `cargo build`.
+  gitignored alongside clangd's `.cache/` index directory; the previous
+  hand-tuned `.clangd` is removed because its relative include paths only
+  worked for files in `src/` and broke on every vendor file. Collaborators
+  get IntelliSense after a single `cargo build`.
+- `.gitignore` now also covers the remaining DDS diagnostic-dump prefixes
+  (`toplevel*.txt`, `retrieved*.txt`, `stored*.txt`, `sched*.txt`) in
+  addition to the previously-listed `ABstats*`/`TTstats*`/`timer*`/
+  `movestats*` patterns, so any future debug build never leaves untracked
+  files behind.
+
+### Known issues
+
+- DDS's per-thread diagnostic-dump compile flags (`DDS_TOP_LEVEL`,
+  `DDS_AB_STATS`, `DDS_TT_STATS`, `DDS_TIMING`, `DDS_MOVES`, `DDS_AB_HITS`,
+  and the umbrella `DDS_DEBUG_ALL` in
+  `vendor/library/src/utility/debug.h`) are non-buildable in v3.x and
+  therefore not exposed as Cargo features. Two upstream issues need fixing
+  before any of them can be turned on: the `File` class referenced by
+  `ThreadData::file*` members was deleted as "unused" in upstream commit
+  `7a3ace6` ("Deletes unused File.h") even though `thread_data.{hpp,cpp}`
+  and `solver_if.cpp` still reference it under `#ifdef` guards; and
+  `thread_data.hpp` reads `DDS_AB_STATS`/`DDS_TIMING` before
+  `utility/debug.h` is included, so the `DDS_DEBUG_ALL` umbrella never
+  fans out for that header. Resolving both — most likely by restoring
+  `library/src/File.{h,cpp}` (~60 LOC `ofstream` wrapper, recoverable
+  from `7a3ace6^` on the `jdh8/dds` fork) and adding `#include "File.h"`
+  plus `#include "utility/debug.h"` to `thread_data.hpp` — is a
+  prerequisite for any future `debug-*` Cargo feature.
 
 ### Fixed
 
