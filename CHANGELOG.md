@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Tooling
+
+- `build.rs` now emits a `compile_commands.json` at the crate root on every
+  build, so clangd (and any other LSP that reads the compile-commands format)
+  can resolve vendor headers regardless of where the file being edited lives
+  in the tree. The file is per-machine (absolute `directory` field) and
+  gitignored; the previous hand-tuned `.clangd` is removed because its
+  relative include paths only worked for files in `src/` and broke on every
+  vendor file. Collaborators get IntelliSense after a single `cargo build`.
+
 ### Fixed
 
 - Repoint the `vendor` submodule at the `jdh8/dds` fork's
