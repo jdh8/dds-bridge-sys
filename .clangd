@@ -1,0 +1,19 @@
+CompileFlags:
+  Add:
+    - -xc++
+    - -std=c++20
+    - -I../vendor/library/src
+    - -I.
+    - -include
+    - sstream
+    - -include
+    - iomanip
+    - -DDDS_THREADS_STL
+    - -DDDS_NO_DUMP_ON_ERROR
+  Compiler: clang++
+
+---
+If:
+  PathMatch: vendor/.*
+Diagnostics:
+  Suppress: '*'

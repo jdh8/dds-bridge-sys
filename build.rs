@@ -1,12 +1,8 @@
 use anyhow::Context as _;
-use std::fmt::Write as _;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 fn main() -> anyhow::Result<()> {
     let out_dir = std::env::var_os("OUT_DIR").context("OUT_DIR not set")?;
-    let manifest_dir = PathBuf::from(
-        std::env::var_os("CARGO_MANIFEST_DIR").context("CARGO_MANIFEST_DIR not set")?,
-    );
 
     bindgen::Builder::default()
         .header("src/wrapper.h")
@@ -47,73 +43,5 @@ fn main() -> anyhow::Result<()> {
         build.define("DDS_NO_DUMP_ON_ERROR", None);
     }
     build.try_compile("dds")?;
-
-    // GCC/clang-spelled mirror of the cc::Build flags above, for clangd's
-    // compile_commands.json. Keep in sync with the cc::Build call.
-    let mut flags: Vec<String> = vec![
-        "-xc++".into(),
-        "-std=c++20".into(),
-        "-Ivendor/library/src".into(),
-        "-Isrc".into(),
-        "-include".into(),
-        "sstream".into(),
-        "-include".into(),
-        "iomanip".into(),
-        "-DDDS_THREADS_STL".into(),
-    ];
-    if !dump {
-        flags.push("-DDDS_NO_DUMP_ON_ERROR".into());
-    }
-    write_compile_commands(&manifest_dir, &sources, &flags)?;
     Ok(())
-}
-
-fn write_compile_commands(
-    manifest_dir: &Path,
-    sources: &[PathBuf],
-    flags: &[String],
-) -> anyhow::Result<()> {
-    let dir = manifest_dir.display().to_string();
-    let entries: Vec<String> = sources
-        .iter()
-        .map(|p| {
-            let file = p.display().to_string();
-            let args = std::iter::once("clang++".to_string())
-                .chain(flags.iter().cloned())
-                .chain(["-c".into(), file.clone()])
-                .map(|s| json_string(&s))
-                .collect::<Vec<_>>()
-                .join(", ");
-            format!(
-                "  {{ \"directory\": {}, \"file\": {}, \"arguments\": [{}] }}",
-                json_string(&dir),
-                json_string(&file),
-                args,
-            )
-        })
-        .collect();
-    std::fs::write(
-        manifest_dir.join("compile_commands.json"),
-        format!("[\n{}\n]\n", entries.join(",\n")),
-    )
-    .context("writing compile_commands.json")?;
-    Ok(())
-}
-
-fn json_string(s: &str) -> String {
-    let mut out = String::with_capacity(s.len() + 2);
-    out.push('"');
-    for c in s.chars() {
-        match c {
-            '"' => out.push_str("\\\""),
-            '\\' => out.push_str("\\\\"),
-            '\n' => out.push_str("\\n"),
-            '\t' => out.push_str("\\t"),
-            '\r' => out.push_str("\\r"),
-            c if (c as u32) < 0x20 => write!(out, "\\u{:04x}", c as u32).unwrap(),
-            c => out.push(c),
-        }
-    }
-    out.push('"');
-    out
 }

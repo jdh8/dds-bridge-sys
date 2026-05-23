@@ -24,8 +24,5 @@ retrieved*.txt
 stored*.txt
 sched*.txt
 
-# Per-machine compile DB emitted by build.rs for clangd
-/compile_commands.json
-
-# Clangd on-disk index, sibling of the generated compile_commands.json
+# Clangd on-disk index
 /.cache/

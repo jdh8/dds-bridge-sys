@@ -4,14 +4,15 @@
 
 ### Tooling
 
-- `build.rs` now emits a `compile_commands.json` at the crate root on every
-  build, so clangd (and any other LSP that reads the compile-commands format)
-  can resolve vendor headers regardless of where the file being edited lives
-  in the tree. The file is per-machine (absolute `directory` field) and
-  gitignored alongside clangd's `.cache/` index directory; the previous
-  hand-tuned `.clangd` is removed because its relative include paths only
-  worked for files in `src/` and broke on every vendor file. Collaborators
-  get IntelliSense after a single `cargo build`.
+- Restore a committed `.clangd` at the crate root and drop the per-build
+  `compile_commands.json` emission from `build.rs`. The build-script write
+  broke docs.rs (its workdir is mounted read-only — only `OUT_DIR` is
+  writable), and would have shipped that breakage in v3.1.1; v3.1.0 was
+  unaffected because it predates the emission. The new `.clangd` supplies
+  the flags needed for files in `src/` (where the wrapper and
+  `dds_context.{h,cpp}` live) and suppresses diagnostics under `vendor/`,
+  which we don't lint anyway. No `cargo build` step is needed to get
+  IntelliSense.
 - `.gitignore` now also covers the remaining DDS diagnostic-dump prefixes
   (`toplevel*.txt`, `retrieved*.txt`, `stored*.txt`, `sched*.txt`) in
   addition to the previously-listed `ABstats*`/`TTstats*`/`timer*`/
