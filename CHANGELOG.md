@@ -1,5 +1,15 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- Removed the `[profile.dev] opt-level = 3` override. Dev builds now
+  use Cargo's default opt-level 0 for both Rust and `cc`-built C++.
+  Same rationale as the corresponding removal in `ddss-sys` 0.1.2:
+  don't mask the converse-class bugs (UB-in-unsafe miscompilations
+  and the like) that only surface at -O2/-O3.
+
 ## [3.1.1] - 2026-05-24
 
 ### Tooling
