@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [3.2.0] - 2026-05-25
 
 ### Added
 
@@ -234,6 +234,7 @@
 - Update Rust to 2024
 - Update bindgen
 
+[3.2.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.0
 [2.1.1]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.1
 [2.1.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.0
 [2.0.5]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.0.5
