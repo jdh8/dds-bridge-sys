@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Added
+
+- `dds_calc_dd_tables_batched` and `dds_solve_boards_batched` FFI entry
+  points in `src/dds_context.{h,cpp}`. Each accepts N independent
+  deals/boards plus a per-worker `DdsSolverConfig`, spawns an internal
+  pool sized to `std::thread::hardware_concurrency()` (overridable via
+  the `n_threads` argument), and dispatches work via an atomic
+  fetch-add counter. Every worker owns its own `SolverContext` — no
+  shared mutable state, so the thread-safety guarantee that 3.1.1
+  added to `dds_calc_dd_table` extends naturally to the batched path.
+  The first non-success status from any worker is preserved (later
+  successes do not overwrite it); workers continue draining the
+  remaining items after an error, mirroring the existing per-deal
+  Rust caller pattern. This ports the structural performance win
+  from the `ddss` fork's `CalcAllTablesPBNx` (in-vendor batched
+  scheduling) without reintroducing the `cparam` global it relies on.
+
 ### Changed
 
 - Removed the `[profile.dev] opt-level = 3` override. Dev builds now

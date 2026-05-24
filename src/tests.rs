@@ -164,6 +164,94 @@ fn solver_context_solve_dd_table() {
     assert_eq!(tricks, SOLUTION);
 }
 
+/// Smoke test for the batched `SolverContext` C shim.
+///
+/// Submits four distinct deals to `dds_calc_dd_tables_batched` and asserts
+/// that each result matches a serial call to `dds_calc_dd_table` on the
+/// same deal, cell-by-cell across all 5 strains × 4 declarers.
+#[test]
+fn solver_context_batched_matches_serial() {
+    const MASK: core::ffi::c_uint = ((1 << 13) - 1) << 2;
+    const FLUSH: crate::DdTableDeal = crate::DdTableDeal {
+        cards: [
+            [0, 0, 0, MASK],
+            [0, 0, MASK, 0],
+            [0, MASK, 0, 0],
+            [MASK, 0, 0, 0],
+        ],
+    };
+    // Rotated flush deal — different from FLUSH so results differ too.
+    const FLUSH_ROT: crate::DdTableDeal = crate::DdTableDeal {
+        cards: [
+            [0, 0, MASK, 0],
+            [0, MASK, 0, 0],
+            [MASK, 0, 0, 0],
+            [0, 0, 0, MASK],
+        ],
+    };
+    const A54: core::ffi::c_uint = 0b10000_0000_1100_00;
+    const QJ32: core::ffi::c_uint = 0b00110_0000_0011_00;
+    const K976: core::ffi::c_uint = 0b01000_1011_0000_00;
+    const T8: core::ffi::c_uint = 0b00001_0100_0000_00;
+    const SYMMETRIC_1NT: crate::DdTableDeal = crate::DdTableDeal {
+        cards: [
+            [A54, QJ32, K976, T8],
+            [T8, A54, QJ32, K976],
+            [K976, T8, A54, QJ32],
+            [QJ32, K976, T8, A54],
+        ],
+    };
+    const AKQJ: core::ffi::c_uint = 0xF << 11;
+    const T987: core::ffi::c_uint = 0xF << 7;
+    const XXXX: core::ffi::c_uint = 0xF << 3;
+    const X: core::ffi::c_uint = 1 << 2;
+    const PAR_ZERO: crate::DdTableDeal = crate::DdTableDeal {
+        cards: [
+            [AKQJ, X, XXXX, T987],
+            [XXXX, T987, AKQJ, X],
+            [X, AKQJ, T987, XXXX],
+            [T987, XXXX, X, AKQJ],
+        ],
+    };
+
+    let deals = [FLUSH, FLUSH_ROT, SYMMETRIC_1NT, PAR_ZERO];
+
+    let cfg = crate::DdsSolverConfig {
+        tt_kind: crate::DDS_TT_KIND_LARGE.try_into().unwrap(),
+        tt_mem_default_mb: 0,
+        tt_mem_maximum_mb: 0,
+    };
+
+    // Serial reference: one shared SolverContext, processed sequentially.
+    let mut expected: Vec<crate::DdTableResults> =
+        vec![crate::DdTableResults::default(); deals.len()];
+    unsafe {
+        let _guard = THREAD_POOL.lock();
+        let ctx = crate::dds_solver_context_new(&raw const cfg);
+        assert!(!ctx.is_null());
+        for (i, d) in deals.iter().enumerate() {
+            let s = crate::dds_calc_dd_table(ctx, &raw const *d, &raw mut expected[i]);
+            assert_eq!(s, crate::RETURN_NO_FAULT as i32);
+        }
+        crate::dds_solver_context_free(ctx);
+    }
+
+    // Batched path: ask for 4 workers (capped internally to deals.len()).
+    let mut got: Vec<crate::DdTableResults> = vec![crate::DdTableResults::default(); deals.len()];
+    let status = unsafe {
+        let _guard = THREAD_POOL.lock();
+        crate::dds_calc_dd_tables_batched(
+            i32::try_from(deals.len()).unwrap(),
+            deals.as_ptr(),
+            got.as_mut_ptr(),
+            4,
+            &raw const cfg,
+        )
+    };
+    assert_eq!(status, crate::RETURN_NO_FAULT as i32);
+    assert_eq!(got, expected);
+}
+
 /// A symmetric deal where everyone makes 1NT but no suit contract
 ///
 /// This example is taken from
