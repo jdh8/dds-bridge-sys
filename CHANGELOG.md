@@ -9,6 +9,15 @@
   Same rationale as the corresponding removal in `ddss-sys` 0.1.2:
   don't mask the converse-class bugs (UB-in-unsafe miscompilations
   and the like) that only surface at -O2/-O3.
+- Refresh the `vendor` submodule (`26ee3ce` → `d2f3200`): rebase the
+  three local patches (thread-safe `calc_dd_table`, dead `System`
+  callback cleanup) onto upstream master, picking up an upstream typo
+  fix, Bazel/CI updates, and the `DDS_VERSION` macro bump from `20900`
+  to `30000`. No FFI surface change, but `DDSInfo.major/minor/patch`
+  (and the "Version" line in `systemString`) now report **3.0.0**
+  instead of 2.9.0 at runtime — downstream consumers that pin the
+  reported version (e.g. dds-bridge's `system_info_version_is_2_9_0`
+  test) will need to update once a release picks this up.
 
 ## [3.1.1] - 2026-05-24
 
