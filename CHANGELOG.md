@@ -35,6 +35,17 @@
   instead of 2.9.0 at runtime — downstream consumers that pin the
   reported version (e.g. dds-bridge's `system_info_version_is_2_9_0`
   test) will need to update once a release picks this up.
+- Retire the `jdh8/dds` fork as the `vendor` submodule remote. Upstream
+  `dds-bridge/dds` has since landed equivalents of the fork's local
+  patches (notably `1b121af` "eliminate all mutable global state from
+  solver and par code", which subsumes the fork's thread-safe
+  `calc_dd_table(ctx)` rewrite), so the submodule now tracks the
+  official `develop` branch (`d2f3200` → `1ce9026`). The only thing
+  lost is the fork's removal of unused legacy `System` callback /
+  `calc_*` shim code paths; those compile cleanly upstream as dead
+  code and are not on any path `dds_context.{h,cpp}` exercises. No
+  FFI surface change and all tests (incl. `solver_context_batched_*`)
+  pass against the upstream tree.
 
 ## [3.1.1] - 2026-05-24
 
