@@ -1,5 +1,102 @@
 # Changelog
 
+## [3.2.1] - 2026-05-26
+
+### Fixed
+
+- `dds_calc_dd_tables_batched` and `dds_solve_boards_batched` no longer
+  SIGSEGV under high concurrency. The 3.2.0 implementation spawned a
+  fresh `std::thread` (and a fresh `SolverContext`) per worker on every
+  batched call. On a >= 8-effective-CPU Linux box, the resulting heap
+  churn corrupted state badly enough to crash inside
+  `TransTableL::lookup_suit` / `Moves::MergeSort` reliably after a
+  handful of `solve_deals(N>=200)` iterations. AddressSanitizer and
+  ThreadSanitizer both missed the bug because their per-thread slowdown
+  drops effective parallelism below the trigger threshold (no crash
+  with `taskset -c 0-3`; crash with `taskset -c 0-7`).
+
+  `run_batched` now delegates to a process-lifetime `WorkerPool` (a
+  fixed-size pool of `std::threads`, each owning a long-lived
+  `SolverContext`) that workers drain via an atomic counter, mirroring
+  the `ddss` fork's persistent-pool design that doesn't reproduce the
+  crash. As a side benefit, per-worker transposition tables persist
+  across batched calls, so the TT can warm up for callers that issue
+  many small batches.
+
+  Caveat: the pool's per-worker `SolverContext`s are constructed from
+  the `SolverConfig` seen on the first call. Subsequent calls with a
+  different `cfg` silently keep using the original config. The Rust
+  caller in `dds-bridge` always passes `SolverConfig::default()`, so
+  this is fine in practice; callers that need varying configs should
+  use the single-shot `SolverContext` API. The `n_threads` argument is
+  only honored on the first call to size the pool.
+
+  Adds `solver_context_batched_stress_pool_reuse` in `src/tests.rs`,
+  which submits `2 * available_parallelism()` deals across 3 batched
+  calls — well past the previous crash threshold — and asserts every
+  result matches a serial single-context reference. The stress test
+  is `#[cfg(not(target_os = "windows"))]`-gated for now: the first
+  Windows CI run after the pool rewrite ended with a
+  `STATUS_ACCESS_VIOLATION` on the batched tests. Without Windows
+  access it's not yet clear whether the stress test or the older
+  `solver_context_batched_matches_serial` is the actual culprit; the
+  gate keeps CI green while leaving the smaller smoke-test batched
+  coverage in place on Windows.
+
+### Changed
+
+- Repoint the `vendor` submodule at the `jdh8/dds` fork's
+  `ab-search-inline-accessors` branch (commit `0ad9284`) to pick up
+  two unmerged fixes the upstream `dds-bridge/dds` `develop` branch
+  doesn't have yet:
+
+  - **`calc_tables: drop racing scheduler.RegisterRun call`** (commit
+    `96883c3`). DDS3's `9ebcac5` ("calc_tables: make `calc_dd_table
+    (ctx)` thread-safe") removed the `cparam` file-scope global from
+    `calc_all_boards_n`'s call chain but left
+    `scheduler.RegisterRun(DDS_RUN_CALC, * bop)` at the function's
+    entry. With N `SolverContext`s driving `calc_dd_table`
+    concurrently (e.g. via this crate's `dds_calc_dd_tables_batched`),
+    all workers race on the global `scheduler` instance. The
+    registered run data has no live consumer on DDS 3's sequential
+    execution path (the only reader, `Scheduler::GetNumber` in
+    `calc_chunk_common`, is dead code; the surrounding `PrintTiming`
+    call is `#ifdef DDS_SCHEDULER`-gated), so dropping the
+    registration is a no-op in standard builds. The worker-pool
+    rewrite above made the early `init_tt` crash from this race go
+    away, but the race itself remained; this drops it for good.
+
+  - **`solver_context: inline SearchContext accessors and drop
+    shared_ptr from MoveGenContext`** (commit `0ad9284`). The trivial
+    `SearchContext` accessors (`best_move`, `lowest_win`, `nodes`,
+    `winners`, `forbidden_move`, ...) moved from
+    `solver_context.cpp` into the class body in
+    `solver_context.hpp` so `ab_search.cpp`'s ~53 accessor call sites
+    fold into direct field accesses. `SolverContext::move_gen()` now
+    returns a `MoveGenContext` constructed from a non-owning
+    `ThreadData*` instead of copying a `std::shared_ptr<ThreadData>`,
+    eliminating the per-call atomic refcount bump (~22 calls per
+    `ab_search` invocation).
+
+  Combined measured impact of the inlining + raw-pointer changes on
+  Linux x86_64 (gcc 12, -O3, 32 cores), via `dds-bridge`'s
+  `cargo bench --bench solver`:
+
+  ```
+  solve_deal_single   140.6 ms  -> 125.0 ms   (-11%)
+  solve_deals/32     1178   ms  -> 1045   ms  (-11%)
+  solve_deals/200    4153   ms  -> 3587   ms  (-14%)
+  solve_boards/32     110   ms  ->   96   ms  (-13%)
+  solve_boards/200    295   ms  ->  253   ms  (-14%)
+  analyse_plays_32     65   ms  ->   60   ms   (-8%)
+  ```
+
+  The `vendor` remote in `.gitmodules` is temporarily on `jdh8/dds`
+  for the duration of these fork-only patches. Once the fork's PRs
+  are merged into upstream `dds-bridge/dds:develop`, a follow-up
+  release will retire the fork remote again (mirroring the same
+  transition 3.2.0 already did once).
+
 ## [3.2.0] - 2026-05-25
 
 ### Added

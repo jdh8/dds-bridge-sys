@@ -1,4 +1,4 @@
 [submodule "vendor"]
 	path = vendor
-	url = https://github.com/dds-bridge/dds.git
-	branch = develop
+	url = https://github.com/jdh8/dds.git
+	branch = ab-search-inline-accessors
