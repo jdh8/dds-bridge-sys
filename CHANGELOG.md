@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.2.2] - 2026-06-10
+
+### Changed
+
+- Add `links = "dds_bridge"` to `[package]` in `Cargo.toml` so Cargo
+  treats this crate as a native-link provider and lib.rs no longer reports
+  the `*-sys crate without links property` warning.
+
 ## [3.2.1] - 2026-05-26
 
 ### Fixed
@@ -331,6 +339,8 @@
 - Update Rust to 2024
 - Update bindgen
 
+[3.2.2]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.2
+[3.2.1]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.1
 [3.2.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.0
 [2.1.1]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.1
 [2.1.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/2.1.0
