@@ -1,5 +1,59 @@
 # Changelog
 
+<!-- markdownlint-disable no-duplicate-heading -->
+
+## [3.3.0] - 2026-06-22
+
+### Changed
+
+- Retire the `jdh8/dds` fork and repoint the `vendor` submodule back at
+  upstream `dds-bridge/dds` `develop` (commit `0700b42`, i.e.
+  `v3.0.0-240-g0700b42`). `.gitmodules` now tracks `dds-bridge/dds` on
+  `develop` again, completing the transition 3.2.1 promised.
+
+  Both fork-only patches 3.2.1 carried are now covered upstream, so the
+  3.2.1 performance win and concurrency crash-fix are preserved without
+  any fork-only code:
+
+  - The `solver_context: inline SearchContext accessors and drop
+    shared_ptr from MoveGenContext` patch is superseded by upstream
+    PR #191 ("Avoid per-node shared_ptr churn in the search hot path"),
+    which adds the non-owning `SolverContext::thread_ptr() -> ThreadData*`
+    accessor and uses it at the hot `ab_search` / `quick_tricks` /
+    `later_tricks` sites, removing the same per-node atomic refcount
+    traffic.
+
+  - The `calc_tables: drop racing scheduler.RegisterRun call` patch is no
+    longer needed: upstream reworked the scheduler subsystem and the
+    `scheduler.RegisterRun(...)` call is gone from `calc_all_boards_n` in
+    `calc_tables.cpp`. The batched concurrency stress test
+    (`solver_context_batched_stress_pool_reuse`, 64 deals across 3 batched
+    calls on a 32-core host) passes against this vendor with no SIGSEGV,
+    confirming the global-`scheduler` race that motivated the fork patch
+    is resolved upstream.
+
+  Beyond those two, this refresh pulls 214 upstream commits since the old
+  fork base, notably: a series of `SolverContext` debug-file lifecycle
+  fixes (correct close/reopen handling when a `SolverContext` is the last
+  `ThreadData` owner), the scheduler/`DDS_SCHEDULER` build-consistency
+  rework (PR #201), AB-stats build fixes (PR #195), and macOS LTO
+  (PR #192). The public ABI header `api/dll.h` is unchanged, so the
+  generated bindings — and downstream `dds-bridge` — are unaffected.
+
+### Build
+
+- `build.rs` now excludes upstream's newly added
+  `vendor/library/src/dds_api.cpp` from the `cc` compile. That file
+  exports a `dds_*` "Version 3" C API (`dds_solve_board`,
+  `dds_calc_dd_table`, `dds_calc_par`, SolverContext management, ...) whose
+  symbol names collide at link time with this crate's own
+  `src/dds_context.cpp` shim. We keep our shim, which is a superset — it
+  also provides the batched `dds_solve_boards_batched` /
+  `dds_calc_dd_tables_batched` WorkerPool entry points that upstream's API
+  does not have. Nothing inside `vendor/` calls the excluded entry points,
+  and `src/wrapper.h` binds only `api/dll.h` (not `api/dds_api.hpp`), so
+  the exclusion is link-only and the generated bindings are unchanged.
+
 ## [3.2.2] - 2026-06-10
 
 ### Changed

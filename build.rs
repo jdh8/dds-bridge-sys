@@ -19,8 +19,16 @@ fn main() -> anyhow::Result<()> {
         .generate()?
         .write_to_file(PathBuf::from(out_dir).join("bindings.rs"))?;
 
+    // Upstream's vendor/library/src/dds_api.cpp exports a `dds_*` "Version 3" C
+    // API (dds_solve_board, dds_calc_dd_table, dds_calc_par, ...) that collides
+    // at link time with this crate's own src/dds_context.cpp shim. We expose our
+    // shim — a superset that also carries the batched WorkerPool entry points
+    // (dds_solve_boards_batched, dds_calc_dd_tables_batched) upstream lacks — so
+    // skip upstream's file. Nothing inside vendor/ calls these entry points.
+    // ponytail: drop this filter if we ever adopt upstream's api/dds_api.hpp wholesale.
     let mut sources: Vec<PathBuf> = glob::glob("vendor/library/src/**/*.cpp")?
         .flatten()
+        .filter(|path| !path.ends_with("dds_api.cpp"))
         .collect();
     sources.push(PathBuf::from("src/dds_context.cpp"));
 
