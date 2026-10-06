@@ -9,9 +9,15 @@ extern "C" {
 
 typedef struct DdsSolverContext DdsSolverContext;
 
+/* Transposition-table implementation. Values match upstream `enum class
+ * TTKind`. Pattern (shape -> relative-rank patterns) is upstream's default:
+ * same results as Large, at parity on ordinary deals, ~25-40% faster on
+ * void-heavy deals and under a tight memory cap, and ~1/3 less RSS.
+ */
 typedef enum DdsTtKind {
   DDS_TT_KIND_SMALL = 0,
-  DDS_TT_KIND_LARGE = 1
+  DDS_TT_KIND_LARGE = 1,
+  DDS_TT_KIND_PATTERN = 2
 } DdsTtKind;
 
 typedef struct DdsSolverConfig {

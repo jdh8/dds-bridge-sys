@@ -1,6 +1,6 @@
 [package]
 name = "dds-bridge-sys"
-version = "3.3.0"
+version = "3.4.0"
 links = "dds_bridge"
 authors = ["Chen-Pang He (https://jdh8.org)"]
 edition = "2024"

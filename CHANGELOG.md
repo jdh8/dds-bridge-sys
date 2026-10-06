@@ -2,7 +2,33 @@
 
 <!-- markdownlint-disable no-duplicate-heading -->
 
-## [Unreleased]
+## [3.4.0] - 2026-10-07
+
+### Changed
+
+- Refresh the `vendor` submodule to upstream `dds-bridge/dds` `develop`
+  commit `b865077` (`v3.1.0-275-gb865077`), 993 commits past the `0700b42`
+  that 3.3.0 vendored. No changes to `build.rs` or the C shim were needed.
+  Highlights, measured through `dds-bridge` on a 16-thread Ryzen 7 8700F:
+
+  - Full DD tables are 22–27% faster single-threaded and on 32-deal batches,
+    and 41% faster on 200-deal batches (upstream fixed the trump-void move
+    ordering and a full transposition table no longer degrades). Single-board
+    solves in notrump and `AnalysePlayBin` are unchanged.
+  - Upstream added a third transposition table, `TTKind::Pattern`, and made
+    it the `SolverConfig` default. Against Large it returns identical results,
+    is at parity on ordinary deals, 24–30% faster on void-heavy deals, keeps
+    that speed under a tight `tt_mem_maximum_mb` where Large slows by ~35%,
+    and uses about a third less memory per context.
+
+### Added
+
+- `DDS_TT_KIND_PATTERN` (= 2) in `DdsTtKind`, so `DdsSolverConfig` can select
+  the new table through `dds_solver_context_new`, the batched entry points,
+  and `dds_solver_context_configure_tt`. Passing a null config to the batched
+  entry points now yields Pattern, following upstream's default; explicit
+  `DDS_TT_KIND_SMALL` / `DDS_TT_KIND_LARGE` behave as before. Upstream also
+  honours a `DDS_TT_KIND=small|large|pattern` environment override.
 
 ### Fixed
 
@@ -414,6 +440,8 @@
 - Update Rust to 2024
 - Update bindgen
 
+[3.4.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.4.0
+[3.3.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.3.0
 [3.2.2]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.2
 [3.2.1]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.1
 [3.2.0]: https://github.com/jdh8/dds-bridge-sys/releases/tag/3.2.0

@@ -145,23 +145,29 @@ fn solver_context_solve_dd_table() {
     #[allow(clippy::cast_possible_wrap)]
     const SUCCESS: i32 = crate::RETURN_NO_FAULT as i32;
 
-    let cfg = crate::DdsSolverConfig {
-        tt_kind: crate::DDS_TT_KIND_LARGE.try_into().unwrap(),
-        tt_mem_default_mb: 0,
-        tt_mem_maximum_mb: 0,
-    };
-    let deal = DEAL;
-    let mut tricks = crate::DdTableResults::default();
-    let status = unsafe {
-        let _guard = THREAD_POOL.lock();
-        let ctx = crate::dds_solver_context_new(&raw const cfg);
-        assert!(!ctx.is_null());
-        let s = crate::dds_calc_dd_table(ctx, &raw const deal, &raw mut tricks);
-        crate::dds_solver_context_free(ctx);
-        s
-    };
-    assert_eq!(status, SUCCESS);
-    assert_eq!(tricks, SOLUTION);
+    for tt_kind in [
+        crate::DDS_TT_KIND_SMALL,
+        crate::DDS_TT_KIND_LARGE,
+        crate::DDS_TT_KIND_PATTERN,
+    ] {
+        let cfg = crate::DdsSolverConfig {
+            tt_kind: tt_kind.try_into().unwrap(),
+            tt_mem_default_mb: 0,
+            tt_mem_maximum_mb: 0,
+        };
+        let deal = DEAL;
+        let mut tricks = crate::DdTableResults::default();
+        let status = unsafe {
+            let _guard = THREAD_POOL.lock();
+            let ctx = crate::dds_solver_context_new(&raw const cfg);
+            assert!(!ctx.is_null());
+            let s = crate::dds_calc_dd_table(ctx, &raw const deal, &raw mut tricks);
+            crate::dds_solver_context_free(ctx);
+            s
+        };
+        assert_eq!(status, SUCCESS, "tt_kind {tt_kind}");
+        assert_eq!(tricks, SOLUTION, "tt_kind {tt_kind}");
+    }
 }
 
 /// Smoke test for the batched `SolverContext` C shim.

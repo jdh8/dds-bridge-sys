@@ -47,6 +47,10 @@ never share one.
 - [`dds_solver_context_reset_for_solve`] / [`dds_solver_context_clear_tt`]
   / [`dds_solver_context_resize_tt`] / [`dds_solver_context_configure_tt`]
   / [`dds_solver_context_dispose_trans_table`] — TT lifecycle
+- [`DdsSolverConfig::tt_kind`] selects the transposition table:
+  [`DDS_TT_KIND_PATTERN`] (upstream's default; same results as Large, faster
+  on void-heavy deals, about a third less memory), [`DDS_TT_KIND_LARGE`], or
+  [`DDS_TT_KIND_SMALL`]
 
 ### Sequential inside DDS — legacy batch APIs
 
